@@ -39,3 +39,16 @@ def login(user: schemas.UserCreate, db: Session = Depends(get_db)):
     token = auth.create_token({"user_id": db_user.id})
     return {"access_token":token}
 
+#Job Create
+@app.post("/jobs")
+def create_job(job: schemas.JobCreate, db: Session = Depends(get_db)):
+    new_job = models.Job(**job.dict(), user_id=1)
+    db.add(new_job)
+    db.commit()
+    return {"message:":"Job added."}
+
+#Job List
+@app.get("/jobs")
+def get_jobs(db:Session = Depends(get_db)):
+    return db.query(models.Job).all()
+
