@@ -6,49 +6,63 @@ import models, schemas, auth
 
 Base.metadata.create_all(bind=engine)
 
+
 app= FastAPI()
 
-#Database Connection
+ #Database Connection
 
 def get_db():
-    db= SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+     db= SessionLocal()
+     try:
+         yield db
+     finally:
+         db.close()
 
-#Register
-
+ #Register
 @app.post("/register")
 def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
-    hashed = auth.hash_password(user.password)
-    new_user = models.User(email=user.email, password=hashed)
-    db.add(new_user)
-    db.commit()
-    return {"message" : "User created"}
+     hashed = auth.hash_password(user.password)
+     new_user = models.User(email=user.email, password=hashed)
+     db.add(new_user)
+     db.commit()
+     return {"message" : "User created"}
 
-#Login
+ #Login
 
 @app.post("/login")
 def login(user: schemas.UserCreate, db: Session = Depends(get_db)):
-    db_user = db.query(models.User).filter(models.User.email == user.email).first()
+     db_user = db.query(models.User).filter(models.User.email == user.email).first()
 
-    if not db_user or not auth.verify_password(user.passsword, db_user.password):
-        raise HTTPException(status_code=400, detail="Invalid credentials")
+     if not db_user or not auth.verify_password(user.passsword, db_user.password):
+         raise HTTPException(status_code=400, detail="Invalid credentials")
     
-    token = auth.create_token({"user_id": db_user.id})
-    return {"access_token":token}
+     token = auth.create_token({"user_id": db_user.id})
+     return {"access_token":token}
 
-#Job Create
+ #Job Create
 @app.post("/jobs")
 def create_job(job: schemas.JobCreate, db: Session = Depends(get_db)):
-    new_job = models.Job(**job.dict(), user_id=1)
-    db.add(new_job)
-    db.commit()
-    return {"message:":"Job added."}
+     new_job = models.Job(**job.dict(), user_id=1)
+     db.add(new_job)
+     db.commit()
+     return {"message:":"Job added."}
 
-#Job List
+ #Job List
 @app.get("/jobs")
 def get_jobs(db:Session = Depends(get_db)):
-    return db.query(models.Job).all()
+     return db.query(models.Job).all()
 
+
+##TEST
+
+
+# from fastapi import FastAPI
+# from database import engine, Base
+
+# app = FastAPI()
+
+# Base.metadata.create_all(bind=engine)
+
+# @app.get("/")
+# def home():
+#     return {"message": "Backend calisiyor"}
